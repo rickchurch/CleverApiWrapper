@@ -5,6 +5,9 @@ using System.Text;
 
 namespace CleverApiWrapper
 {
+    /// <summary>
+    /// This class is the controller for calls to this library.
+    /// </summary>
     public class DataConverter
     {
         public WrappedData DataRequest(String requestType, String requestSubType)
