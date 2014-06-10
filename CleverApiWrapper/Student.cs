@@ -36,33 +36,3 @@ namespace CleverApiWrapper
     }
 
 }
-
-/*
-"district":"4fd43cc56d11340000000005",
-"dob":"2/11/2007",
-"ell_status":"N",
-"email":"z.steve@example.net",
-"frl_status":"Free",
-"gender":"M",
-"grade":"Kindergarten",
-"hispanic_ethnicity":"Y",
-"iep_status":"N",
-"race":"Black or African American",
-"school":"530e595026403103360ff9fe",
-"sis_id":"100095233",
-"state_id":"231786324",
-"student_number":"100095233",
-"credentials":{
-	"district_username":"stevez33",
-	"district_password":"auyik3tiTieL"},
-"location":{
-	"zip":"10459"},
-"name":{"
-	first":"Steve",
-	"middle":"G",
-	"last":"Ziemann"},
-"last_modified":"2014-02-26T21:15:12.350Z",
-"created":"2014-02-26T21:15:12.346Z",
-"google_apps":{},
-"id":"530e5960049e75a9262cff1d"},
-*/

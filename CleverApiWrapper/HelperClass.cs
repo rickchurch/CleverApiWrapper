@@ -22,7 +22,10 @@ namespace CleverApiWrapper
     {
     }
 
-    class HelperClass
+    internal class HelperClass
     {
+        //
     }
+
+
 }
