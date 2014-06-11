@@ -59,15 +59,15 @@ namespace CleverApiWrapper
                             }
                             else if (line.StartsWith("MaxDaysLogFile:"))
                             {
-                                string value = line.Substring(9, line.Length - 15);
+                                string value = line.Substring(15, line.Length - 15);
                                 int testValue;
                                 int.TryParse(value, out testValue);
-                                if (testValue <= (365*2) && testValue >= 0)
+                                if (testValue <= (365 * 2) && testValue >= 0)
                                 {
                                     mMaxDays = testValue;
                                 }
                             }
-                        } 
+                        }
                     }
                 }
             }
@@ -83,14 +83,12 @@ namespace CleverApiWrapper
             List<string> files = new List<string>(Directory.EnumerateFiles(mLogPath));
             foreach (string logFile in files)
             {
-                DateTime lastAccess = File.GetLastAccessTime(logFile);
-                string testIn = (lastAccess - DateTime.Now).TotalDays.ToString();
-                if ((lastAccess - DateTime.Now).TotalDays >= mMaxDays)
+                FileInfo fileinfo = new FileInfo(logFile);
+                double daysAged = (DateTime.Now - fileinfo.LastWriteTime).TotalDays;
+                if (daysAged > mMaxDays)
                 {
                     File.Delete(logFile);
                 }
-                
-                string inini = "llds" + logFile;
             }
         }
 
