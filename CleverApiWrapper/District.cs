@@ -8,6 +8,6 @@ namespace CleverApiWrapper
     public class District
     {
         public string Name { get; set; }
-        public string Id { get; set; }
+        public string id { get; set; }
     }
 }

@@ -20,7 +20,7 @@ namespace CleverApiWrapper
         public Principal principal { get; set; }
         public string last_modified { get; set; }
         public string created { get; set; }
-        public string Id { get; set; }
+        public string id { get; set; }
     }
 
     public class SchoolLocation
