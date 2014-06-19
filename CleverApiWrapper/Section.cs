@@ -7,6 +7,8 @@ namespace CleverApiWrapper
 {
     public class Section
     {
+        //  NEED TO CONFIRM THESE PROPERTIES  !!!!!!!!!!!!
+
         public string course_name { get; set; }
         public string course_number { get; set; }
         public string district { get; set; }

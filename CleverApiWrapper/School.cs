@@ -7,6 +7,8 @@ namespace CleverApiWrapper
 {
     public class School
     {
+        //  NEED TO CONFIRM THESE PROPERTIES - CONFIRMED
+
         public string district { get; set; }
         public string high_grade { get; set; }
         public string low_grade { get; set; }
@@ -20,6 +22,7 @@ namespace CleverApiWrapper
         public Principal principal { get; set; }
         public string last_modified { get; set; }
         public string created { get; set; }
+        // id is the Clever ID that is passed in as part of the url when you req data on this school
         public string id { get; set; }
     }
 

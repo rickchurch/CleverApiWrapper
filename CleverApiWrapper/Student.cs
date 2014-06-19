@@ -7,6 +7,8 @@ namespace CleverApiWrapper
 {
     public class Student
     {
+        //  NEED TO CONFIRM THESE PROPERTIES -  CONFIRMED
+
         public string district { get; set; }
         public string dob { get; set; }
         public string ell_status { get; set; }
@@ -23,7 +25,7 @@ namespace CleverApiWrapper
         public string student_number { get; set; }
         public Credentials credentials { get; set; }
         public StudentLocation location { get; set; }
-        public Name name { get; set; }
+        public PersonName name { get; set; }
         public string last_modified { get; set; }
         public string created { get; set; }
         public Google_apps google_apps { get; set; }

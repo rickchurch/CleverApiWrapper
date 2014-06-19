@@ -5,23 +5,6 @@ using System.Text;
 
 namespace CleverApiWrapper
 {
-    public class Credentials
-    {
-        public string district_username { get; set; }
-        public string district_password { get; set; }
-    }
-
-    public class Name
-    {
-        public string first { get; set; }
-        public string middle { get; set; }
-        public string last { get; set; }
-    }
-
-    public class Google_apps
-    {
-    }
-
     internal class HelperClass
     {
         List<string> mValidIncludeItems = new List<string>() { "districts", "teachers", "schools", "students", "events", "sections" };
@@ -42,7 +25,7 @@ namespace CleverApiWrapper
             return success;
         }
 
-        internal string GetStringFromList(Logger logger, List<string> stringList)
+        internal string GetIncludeStringFromList(Logger logger, List<string> stringList)
         {
             string includes = string.Empty;
             foreach (string inclItem in stringList)

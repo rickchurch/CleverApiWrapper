@@ -51,14 +51,14 @@ namespace CleverApiWrapper
             string msg = string.Format("reqType: {0} :: reqSubType: {1} :: id: {2} :: List<string> count: {3}", requestType, requestSubType, id, includeList.Count);
             mLogger.Log(methodName, msg, 1);
 
-            string includes = mHelper.GetStringFromList(mLogger, includeList);
+            string includes = mHelper.GetIncludeStringFromList(mLogger, includeList);
 
             //string sURL = "https://api.clever.com/v1.1/districts/4fd43cc56d11340000000005?include=schools,teachers"; //   <--- works ok
             string url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}?include={2}", requestType, id, includes);
             mLogger.Log(methodName, "url: " + url, 2);
             string rawData = GetRawDataFromClever(url);
             Parser parser = new Parser(mLogger);
-            parser.ReadJsonDict(rawData); // need a better name for ReadJsonDict
+            wrappedData = parser.ReadJsonDict(rawData); // need a better name for ReadJsonDict
 
             return wrappedData;
         }
