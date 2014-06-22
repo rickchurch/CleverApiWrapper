@@ -12,24 +12,11 @@ namespace CleverApiWrapper
     {
         Logger mLogger;
         WrappedData mWrappedData;
-        //List<District> mDistricts;
-        List<School> mSchools;
-        //List<Teacher> mTeachers;
-        //List<Student> mStudents;
-        //List<Section> mSections;
-        //List<Event> mEvents;
 
         internal Parser(Logger logger)
         {
             mLogger = logger;
-            WrappedData mWrappedData = new WrappedData();
-            mWrappedData.Schools = new List<School>();
-            //mDistricts = new List<District>();
-            mSchools = new List<School>();
-            //mTeachers = new List<Teacher>();
-            //mStudents = new List<Student>();
-            //mSections = new List<Section>();
-            //mEvents = new List<Event>();
+            mWrappedData = new WrappedData();
         }
 
         internal WrappedData ReadJsonDict(string msg)
@@ -42,11 +29,10 @@ namespace CleverApiWrapper
             {
                 if (kvp.Key == "data")
                 {
-                    Console.WriteLine("key: {0}", kvp.Key);
+                    mLogger.Log(methodName, string.Format("Upper most level key: {0}", kvp.Key), 3);
                     foreach (KeyValuePair<string, dynamic> kvp2 in kvp.Value)
                     {
-                        //if (kvp2.Key == "schools" || kvp2.Key == "teachers" || kvp2.Key == "sections" || kvp2.Key == "students" || kvp2.Key == "events")
-                        if (kvp2.Key == "schools")
+                        if (kvp2.Key == "schools" || kvp2.Key == "teachers" || kvp2.Key == "sections" || kvp2.Key == "students" || kvp2.Key == "events")
                         {
                             string targetObjectType = kvp2.Key;
                             mLogger.Log(methodName, string.Format("Found object data for: {0}", targetObjectType), 2, true);
@@ -97,8 +83,6 @@ namespace CleverApiWrapper
                                                         }
                                                     }
                                                 }
-
-                                                // http://www.tomasvera.com/programming/using-javascriptserializer-to-parse-json-objects/
                                             }
                                         }
                                     }
@@ -108,8 +92,8 @@ namespace CleverApiWrapper
                     }
                 }
             }
-            mWrappedData.Schools = mSchools;
 
+            mLogger.Log(methodName, "", 2);
             mLogger.Log(methodName, string.Format("Completed processing to parse raw Clever message."), 2);
             mLogger.Log(methodName, string.Format("Found {0} districts.", mWrappedData.Districts.Count), 2);
             mLogger.Log(methodName, string.Format("Found {0} schools.", mWrappedData.Schools.Count), 2);
@@ -122,7 +106,6 @@ namespace CleverApiWrapper
         bool InstantiateSchool(string classType, dynamic dataDict)
         {
             string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-            Console.WriteLine("");
             mLogger.Log(methodName, "", 3);
 
             bool success = true;
@@ -131,6 +114,7 @@ namespace CleverApiWrapper
             SchoolLocation loc = new SchoolLocation();
             Principal principal = new Principal();
 
+            // Get each dp (datapoint) found in dataDict
             foreach (KeyValuePair<string, dynamic> dpParent in dataDict)
             {
                 if (dpParent.Value != null)
@@ -138,6 +122,7 @@ namespace CleverApiWrapper
                     Type valueType = dpParent.Value.GetType();
                     if (valueType.IsGenericType)
                     {
+                        // This value item is not just another string value but (probably) another dictionary
                         Type baseType = valueType.GetGenericTypeDefinition();
                         if (baseType == typeof(Dictionary<,>))
                         {
@@ -170,8 +155,7 @@ namespace CleverApiWrapper
             }
             school.location = loc;
             school.principal = principal;
-            mSchools.Add(school);
-            //mWrappedData.Schools.Add(school);
+            mWrappedData.Schools.Add(school);
 
             return success;
         }
@@ -188,6 +172,7 @@ namespace CleverApiWrapper
             PersonName pName = new PersonName();
             Google_apps gApps = new Google_apps();
 
+            // Get each dp (datapoint) found in dataDict
             foreach (KeyValuePair<string, dynamic> dpParent in dataDict)
             {
                 if (dpParent.Value != null)
@@ -195,6 +180,7 @@ namespace CleverApiWrapper
                     Type valueType = dpParent.Value.GetType();
                     if (valueType.IsGenericType)
                     {
+                        // This value item is not just another string value but (probably) another dictionary
                         Type baseType = valueType.GetGenericTypeDefinition();
                         if (baseType == typeof(Dictionary<,>))
                         {
@@ -233,7 +219,6 @@ namespace CleverApiWrapper
             teacher.credentials = credentials;
             teacher.name = pName;
             teacher.google_apps = gApps;
-            //mTeachers.Add(teacher);
             mWrappedData.Teachers.Add(teacher);
 
             return success;
@@ -248,7 +233,8 @@ namespace CleverApiWrapper
 
             Section section = new Section();
 
-            foreach (KeyValuePair<string, dynamic> dpParent in dataDict)
+            // Get each dp (datapoint) found in dataDict
+            foreach (KeyValuePair<string, dynamic> dpParent in dataDict) 
             {
                 if (dpParent.Value != null)
                 {
@@ -256,6 +242,7 @@ namespace CleverApiWrapper
                     if (valueType.IsGenericType)
                     {
                         // condition not expected
+                        mLogger.Log(methodName, string.Format("ALERT !  Condition not expected. valueType of dpParent: {1}", valueType.FullName), 1);
                     }
                     else if (valueType.Name == "String")
                     {
@@ -266,7 +253,6 @@ namespace CleverApiWrapper
                     }
                 }
             }
-            //mSections.Add(section);
             mWrappedData.Sections.Add(section);
 
             return success;
@@ -285,7 +271,8 @@ namespace CleverApiWrapper
             StudentLocation stuLoc = new StudentLocation();
             Google_apps gApps = new Google_apps();
 
-            foreach (KeyValuePair<string, dynamic> dpParent in dataDict)  // dp - datapoint
+            // Get each dp (datapoint) found in dataDict
+            foreach (KeyValuePair<string, dynamic> dpParent in dataDict)
             {
                 if (dpParent.Value != null)
                 {
@@ -337,7 +324,6 @@ namespace CleverApiWrapper
             student.credentials = credentials;
             student.name = pName;
             student.google_apps = gApps;
-            //mStudents.Add(student);
             mWrappedData.Students.Add(student);
 
             return success;

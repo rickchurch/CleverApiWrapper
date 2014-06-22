@@ -7,6 +7,7 @@ using System.IO;
 
 namespace CleverApiWrapper
 {
+
     /// <summary>
     /// This class is the controller for calls to this library.
     /// </summary>
@@ -16,33 +17,42 @@ namespace CleverApiWrapper
         //WrappedData mWrappedData = null;
         HelperClass mHelper = new HelperClass();
         string mCleverToken = "Bearer DEMO_TOKEN";
-   
+
+        public enum cleverRequestType
+        {
+            district,
+            school,
+            teacher,
+            section,
+            student,
+        };
+
         public CleverApiWrapperLib()
         {
             mLogger = new Logger();
         }
 
-        public WrappedData DataRequest(String requestType, String requestSubType)
-        {
-            WrappedData wrappedData = new WrappedData();
-            string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_1";
-            string msg = string.Format("reqType: {0} :: reqSubType: {1}", requestType, requestSubType);
-            mLogger.Log(methodName, msg, 1);
+        //public WrappedData DataRequest(requestType requestType, String requestSubType)
+        //{
+        //    WrappedData wrappedData = new WrappedData();
+        //    string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_1";
+        //    string msg = string.Format("reqType: {0} :: reqSubType: {1}", requestType, requestSubType);
+        //    mLogger.Log(methodName, msg, 1);
 
-            return wrappedData;
-        }
+        //    return wrappedData;
+        //}
 
-        public WrappedData DataRequest(String requestType, String requestSubType, List<KeyValuePair<String, String>> kvpList)
-        {
-            WrappedData wrappedData = new WrappedData();
-            string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_2";
-            string msg = string.Format("reqType: {0} :: reqSubType: {1} :: List<kvp> count: {2}", requestType, requestSubType, kvpList.Count);
-            mLogger.Log(methodName, msg, 1);
+        //public WrappedData DataRequest(String requestType, String requestSubType, List<KeyValuePair<String, String>> kvpList)
+        //{
+        //    WrappedData wrappedData = new WrappedData();
+        //    string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_2";
+        //    string msg = string.Format("reqType: {0} :: reqSubType: {1} :: List<kvp> count: {2}", requestType, requestSubType, kvpList.Count);
+        //    mLogger.Log(methodName, msg, 1);
 
-            return wrappedData;
-        }
+        //    return wrappedData;
+        //}
 
-        public WrappedData DataRequest(String requestType, String requestSubType, String id, List<String> includeList)
+        public WrappedData DataRequest(cleverRequestType requestType, String requestSubType, String id, List<String> includeList)
         {
             // TODO - do I really need the 2nd string value for anything ????
             // target method - june 14
@@ -56,32 +66,33 @@ namespace CleverApiWrapper
             //string sURL = "https://api.clever.com/v1.1/districts/4fd43cc56d11340000000005?include=schools,teachers"; //   <--- works ok
             string url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}?include={2}", requestType, id, includes);
             mLogger.Log(methodName, "url: " + url, 2);
-            string rawData = GetRawDataFromClever(url);
+            //string rawData = GetRawDataFromClever(url);
+            string rawData = TestWebResponseError(url);
             Parser parser = new Parser(mLogger);
-            wrappedData = parser.ReadJsonDict(rawData); // need a better name for ReadJsonDict
+            //wrappedData = parser.ReadJsonDict(rawData); // need a better name for ReadJsonDict
 
             return wrappedData;
         }
 
-        public WrappedData DataRequest(String requestType, String requestSubType, String id, List<KeyValuePair<String, String>> kvpList)
-        {
-            WrappedData wrappedData = new WrappedData();
-            string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_4";
-            string msg = string.Format("reqType: {0} :: reqSubType: {1} :: id: {2} :: List<kvp> count: {3}", requestType, requestSubType, id, kvpList.Count);
-            mLogger.Log(methodName, msg, 1);
+        //public WrappedData DataRequest(String requestType, String requestSubType, String id, List<KeyValuePair<String, String>> kvpList)
+        //{
+        //    WrappedData wrappedData = new WrappedData();
+        //    string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_4";
+        //    string msg = string.Format("reqType: {0} :: reqSubType: {1} :: id: {2} :: List<kvp> count: {3}", requestType, requestSubType, id, kvpList.Count);
+        //    mLogger.Log(methodName, msg, 1);
 
-            return wrappedData;
-        }
+        //    return wrappedData;
+        //}
 
-        public WrappedData DataRequest(String requestType, String requestSubType, String id)
-        {
-            WrappedData wrappedData = new WrappedData();
-            string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_5";
-            string msg = string.Format("reqType: {0} :: reqSubType: {1} :: id: {2}", requestType, requestSubType, id);
-            mLogger.Log(methodName, msg, 1);
+        //public WrappedData DataRequest(String requestType, String requestSubType, String id)
+        //{
+        //    WrappedData wrappedData = new WrappedData();
+        //    string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_5";
+        //    string msg = string.Format("reqType: {0} :: reqSubType: {1} :: id: {2}", requestType, requestSubType, id);
+        //    mLogger.Log(methodName, msg, 1);
 
-            return wrappedData;
-        }
+        //    return wrappedData;
+        //}
 
         string GetRawDataFromClever(string url)
         {
@@ -103,24 +114,92 @@ namespace CleverApiWrapper
 
             wrGETURL.Headers["Authorization"] = mCleverToken;
 
-            Stream objStream;
-            objStream = wrGETURL.GetResponse().GetResponseStream();
-            StreamReader objReader = new StreamReader(objStream);
-
-            string line = "";
-            while (line != null)
+            try
             {
-                line = objReader.ReadLine();
-                if (line != null)
+                Stream objStream;
+                objStream = wrGETURL.GetResponse().GetResponseStream();
+                if (objStream == null)
                 {
-                    CleverRawMsg = line;
-                    string dateStamp = DateTime.Now.ToString(@"MMMdd_HHmm");
-                    //SaveData(line, dateStamp);
-                    break;
+                    int xcv = 5;
+                }
+                StreamReader objReader = new StreamReader(objStream);
+
+                string line = "";
+                while (line != null)
+                {
+                    line = objReader.ReadLine();
+                    if (line != null)
+                    {
+                        CleverRawMsg = line;
+                        string dateStamp = DateTime.Now.ToString(@"MMMdd_HHmm");
+                        //SaveData(line, dateStamp);
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                //
+            }
+            return CleverRawMsg;
+        }
+
+        string TestWebResponseError(string uri)
+        {
+            string CleverRawMsg = string.Empty;
+            try
+            {
+                var request = WebRequest.Create(uri);
+                request.Headers["Authorization"] = mCleverToken;  // test the response with this line commented out
+                using (var response = request.GetResponse())
+                {
+                    using (var responseStream = response.GetResponseStream())
+                    {
+                        // Process the stream
+                        //Stream objStream;
+                        //objStream = wrGETURL.GetResponse().GetResponseStream();
+                        StreamReader objReader = new StreamReader(responseStream);
+
+                        string line = "";
+                        while (line != null)
+                        {
+                            line = objReader.ReadLine();
+                            if (line != null)
+                            {
+                                CleverRawMsg = line;
+                                string dateStamp = DateTime.Now.ToString(@"MMMdd_HHmm");
+                                //SaveData(line, dateStamp);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (WebException ex)
+            {
+                if (ex.Status == WebExceptionStatus.ProtocolError &&
+                    ex.Response != null)
+                {
+                    var resp = (HttpWebResponse)ex.Response;
+                    if (resp.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        // Do something
+                    }
+                    else
+                    {
+                        // Do something else
+                    }
+                }
+                else
+                {
+                    // Do something else
                 }
             }
             return CleverRawMsg;
         }
+
+
+
 
         void SaveData(string msg, string title)
         {
