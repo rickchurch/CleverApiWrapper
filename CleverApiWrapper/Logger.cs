@@ -19,7 +19,7 @@ namespace CleverApiWrapper
         int mMaxDays = 7;
         int mLogLevel = 1;  // Log level 1 is highest priority log, 3 log level is routine info
         string mLogPath = string.Empty;
-        string mLogFile = string.Empty;
+        internal string mLogFile = string.Empty;
         DateTime mLastCleanLogTime;
         HelperClass mHelper;
 
