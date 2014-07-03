@@ -16,7 +16,7 @@ namespace CleverApiWrapper
         Logger mLogger = null;
         //WrappedData mWrappedData = null;
         HelperClass mHelper = new HelperClass();
-        string mCleverToken = "Bearer DEMO_TOKEN";
+        public string mCleverToken = "Bearer DEMO_TOKEN";
 
         public enum cleverRequestType
         {
@@ -27,78 +27,295 @@ namespace CleverApiWrapper
             student,
         };
 
+        public enum cleverRequestSubType
+        {
+            district,
+            school,
+            teacher,
+            section,
+            student,
+            grade_level,
+            //properties,
+        };
+
         public CleverApiWrapperLib()
         {
             mLogger = new Logger();
         }
 
-        //public WrappedData DataRequest(requestType requestType, String requestSubType)
-        //{
-        //    WrappedData wrappedData = new WrappedData();
-        //    string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_1";
-        //    string msg = string.Format("reqType: {0} :: reqSubType: {1}", requestType, requestSubType);
-        //    mLogger.Log(methodName, msg, 1);
-
-        //    return wrappedData;
-        //}
-
-        //public WrappedData DataRequest(String requestType, String requestSubType, List<KeyValuePair<String, String>> kvpList)
-        //{
-        //    WrappedData wrappedData = new WrappedData();
-        //    string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_2";
-        //    string msg = string.Format("reqType: {0} :: reqSubType: {1} :: List<kvp> count: {2}", requestType, requestSubType, kvpList.Count);
-        //    mLogger.Log(methodName, msg, 1);
-
-        //    return wrappedData;
-        //}
-
-        public WrappedData DataRequest(cleverRequestType requestType, String requestSubType, String id, List<String> includeList)
+        public WrappedData DataRequest(cleverRequestType requestType)
         {
-            // Example for "https://api.clever.com/v1.1/districts/4fd43cc56d11340000000005?include=schools,teachers"
-            // TODO - do I really need the 2nd string value for anything ????
-            string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_3";
+            string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_1";
+            //////////////////////////////////////////////////////////////
+            //// Example for "https://api.clever.com/v1.1/students"   ////
+            //////////////////////////////////////////////////////////////
+
+            string msg = string.Format("reqType: {0}", requestType);
+            mLogger.Log(methodName, msg, 1);
 
             WrappedData wrappedData = new WrappedData();
-            if (includeList.Count == 0)
-            {
-                mLogger.Log(methodName, "Error !! The include list is empty.", 1);
-                throw new System.ArgumentException("The include list argument is empty. This method expects a list of strings with at least one string.");
-            }
-            
-            string msg = string.Format("reqType: {0} :: reqSubType: {1} :: id: {2} :: List<string> count: {3}", requestType, requestSubType, id, includeList.Count);
-            mLogger.Log(methodName, msg, 1);
-            string includes = mHelper.GetIncludeStringFromList(mLogger, includeList);  // if includes string is empty, we assume an error has occurred during validation
-            if (string.IsNullOrEmpty(includes))
-            {
-                throw new System.ArgumentException(string.Format("The include list argument contains at least one invalid value. For more details, see log at: {0}", mLogger.mLogFile));
-            }
-            mLogger.Log(methodName, string.Format("Successfully validated includes: {0}", includes), 1);
 
-            string url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}?include={2}", requestType, id, includes);
+            string url = string.Format(@"https://api.clever.com/v1.1/{0}s", requestType);
             mLogger.Log(methodName, "url: " + url, 2);
+
+            // Send built URl to Clever and hopefully, we get a message containing the expected data
             string rawData = GetRawDataFromClever(url);
+
+            if (string.IsNullOrEmpty(rawData))
+            {
+                mLogger.Log(methodName, "Unexpected Error !! The message from Clever appears to be empty or was not properly extracted from the stream.", 1);
+                throw new System.ApplicationException("The message from Clever appears to be empty or was not properly extracted from the stream.");
+            }
+            // The parser will parse the JSON msg and generate the Clever objects (Students, Teachers, ect) all contained in the parent object - wrappedData
             Parser parser = new Parser(mLogger);
-            wrappedData = parser.ReadJsonDict(rawData); // need a better name for ReadJsonDict
+            wrappedData = parser.ParseJsonMsg(rawData);
 
             return wrappedData;
         }
 
-        //public WrappedData DataRequest(String requestType, String requestSubType, String id, List<KeyValuePair<String, String>> kvpList)
+        //public WrappedData DataRequest(cleverRequestType requestType, List<KeyValuePair<String, String>> kvpList)            //done/////////////////////////////////////////////
         //{
-        //    WrappedData wrappedData = new WrappedData();
-        //    string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_4";
-        //    string msg = string.Format("reqType: {0} :: reqSubType: {1} :: id: {2} :: List<kvp> count: {3}", requestType, requestSubType, id, kvpList.Count);
+        //    string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_2";
+
+        //    //////////////////////////////////////////////////////////////////////
+        //    //// Example for "https://api.clever.com/v1.1/students?limit=120" ////
+        //    //////////////////////////////////////////////////////////////////////
+
+
+        //    //
+        //    // if kvp key is "id" or "key" strip those out and then send remainder to be stringitized and validated
+        //    //
+
+
+        //    string msg = string.Format("reqType: {0} :: List<kvp> count: {2}", requestType, kvpList.Count);
         //    mLogger.Log(methodName, msg, 1);
+
+        //    WrappedData wrappedData = new WrappedData();
+
+        //    // do some initial argument validation
+        //    if (kvpList.Count == 0)
+        //    {
+        //        mLogger.Log(methodName, "Error !! The list argument is empty.", 1);
+        //        throw new System.ArgumentException("The list argument is empty. This method expects a list of keyValuePairs and containing at least one pair.");
+        //    }
+
+        //    string kvpStr = mHelper.ConvertKvpToStringAndValidate(mLogger, kvpList);  // if kvpStr string is empty, we assume an error has occurred during validation             TEST THIS FUNCTIONALITY !!!!!!!!!!!!!!! also test mulitple parameters
+        //    if (string.IsNullOrEmpty(kvpStr))
+        //    {
+        //        throw new System.ArgumentException(string.Format("The list argument contains at least one invalid value. For more details, see log at: {0}", mLogger.mLogFile));
+        //    }
+        //    mLogger.Log(methodName, string.Format("Successfully validated list of KeyValuePairs and converted to a string: {0}", kvpStr), 1);
+
+        //    string url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}?{2}", requestType, kvpStr);
+        //    mLogger.Log(methodName, "url: " + url, 2);
+
+        //    // Send built URl to Clever and hopefully, we get a message containing the expected data
+        //    string rawData = GetRawDataFromClever(url);
+
+        //    if (string.IsNullOrEmpty(rawData))
+        //    {
+        //        mLogger.Log(methodName, "Unexpected Error !! The message from Clever appears to be empty or was not properly extracted from the stream.", 1);
+        //        throw new System.ApplicationException("The message from Clever appears to be empty or was not properly extracted from the stream.");
+        //    }
+        //    // The parser will parse the JSON msg and generate the Clever objects (Students, Teachers, ect) all contained in the parent object - wrappedData
+        //    Parser parser = new Parser(mLogger);
+        //    wrappedData = parser.ParseJsonMsg(rawData);
 
         //    return wrappedData;
         //}
 
-        //public WrappedData DataRequest(String requestType, String requestSubType, String id)
+        public WrappedData DataRequest(cleverRequestType requestType, List<KeyValuePair<String, String>> kvpList)
+        {
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //// Example for "https://api.clever.com/v1.1/districts/4fd43cc56d11340000000005?include=schools,teachers" ////       tested  https://api.clever.com/v1.1/districts/4fd43cc56d11340000000005?include=schools,teachers
+            //// Example for "https://api.clever.com/v1.1/students?limit=120"                                          ////
+            //// Example for "https://api.clever.com/v1.1/districts/4fd43cc56d11340000000005"                          ////
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_2";
+            string url = string.Empty;
+            string msg = string.Format("reqType: {0} :: List<string> count: {1}", requestType, kvpList.Count);
+            mLogger.Log(methodName, msg, 1);
+
+            WrappedData wrappedData = new WrappedData();
+
+            Tuple<string, string, bool> kvpStrTuple = mHelper.ConvertKvpToStringAndValidate(mLogger, kvpList);  // if kvpStr string is empty, we assume an error has occurred during validation             TEST THIS FUNCTIONALITY !!!!!!!!!!!!!!! also test mulitple parameters
+            string kvpStr = kvpStrTuple.Item1;
+            string id = kvpStrTuple.Item2;
+            bool stringifySuccess = kvpStrTuple.Item3;
+
+            //
+            // Final Validation
+            //
+
+            if (!stringifySuccess)
+            {
+                mLogger.Log(methodName, "Error !! The list argument (Clever parameter items) contains at least one invalid value.", 1);
+                throw new System.ArgumentException(string.Format("The list argument (Clever parameter items) contains at least one invalid value. For more details, see log at: {0}", mLogger.mLogFile));
+            }
+
+            if (kvpList.Count < 1)
+            {
+                mLogger.Log(methodName, "Error !! The list argument (Clever parameter items) contains NO items.", 1);
+                throw new System.ArgumentException(string.Format("The list argument (Clever parameter items) contains NO items."));
+            }
+            if (string.IsNullOrEmpty(id))
+            {
+                if (kvpStr.Contains("include="))
+                {
+                    mLogger.Log(methodName, "Error !! The 'id' value is empty and user attempted to use Clever include item (second-level endpoint).  There must be an 'id' when using 'include'.", 1);
+                    throw new System.ArgumentException("The 'id' value is empty and user attempted to use Clever include item (second-level endpoint).  There must be an 'id' when using 'include'.");
+                }
+            }
+
+            mLogger.Log(methodName, string.Format("Successfully validated list of KeyValuePairs and converted to a string: {0}", kvpStr), 1);
+
+            if (string.IsNullOrEmpty(id))
+            {
+                url = string.Format(@"https://api.clever.com/v1.1/{0}s?{1}", requestType, kvpStr);//                               TEST THIS METHOD WITH AND WITHOUT HAVING AN ID
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(kvpStr))
+                {
+                    url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}", requestType, id);
+                }
+                else
+                {
+                    url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}?{2}", requestType, id, kvpStr);
+                }
+            }
+            mLogger.Log(methodName, "url: " + url, 2);
+
+            // Send built URl to Clever and hopefully, we get a message containing the expected data
+            string rawData = GetRawDataFromClever(url);
+
+            if (string.IsNullOrEmpty(rawData))
+            {
+                mLogger.Log(methodName, "Unexpected Error !! The message from Clever appears to be empty or was not properly extracted from the stream.", 1);
+                throw new System.ApplicationException("The message from Clever appears to be empty or was not properly extracted from the stream.");
+            }
+            // The parser will parse the JSON msg and generate the Clever objects (Students, Teachers, ect) all contained in the parent object - wrappedData
+            Parser parser = new Parser(mLogger);
+            wrappedData = parser.ParseJsonMsg(rawData);
+
+            return wrappedData;
+        }
+
+        public WrappedData DataRequest(cleverRequestType requestType, cleverRequestSubType requestSubType, List<KeyValuePair<String, String>> kvpList)
+        {
+            string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_3";
+
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////
+            //// Example for "https://api.clever.com/v1.1/schools/530e595026403103360ff9fd/students?limit=120" ////                   THIS HAS NOT BEEN TESTED  !!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //// Example for "https://api.clever.com/v1.1/schools/530e595026403103360ff9fd/students"           ////                   TESTED  https://api.clever.com/v1.1/districts/4fd43cc56d11340000000005/teachers
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            string msg = string.Format("reqType: {0} :: reqSubType: {1}  :: List<kvp> count: {2}", requestType, requestSubType, kvpList.Count);
+            mLogger.Log(methodName, msg, 1);
+
+            WrappedData wrappedData = new WrappedData();
+
+            string pluralItems = "s";
+            string url = string.Empty;
+
+            Tuple<string, string, bool> kvpStrTuple = mHelper.ConvertKvpToStringAndValidate(mLogger, kvpList);  // if kvpStr string is empty, we assume an error has occurred during validation             TEST THIS FUNCTIONALITY !!!!!!!!!!!!!!! also test mulitple parameters
+            string kvpStr = kvpStrTuple.Item1;
+            string id = kvpStrTuple.Item2;
+            bool stringifySuccess = kvpStrTuple.Item3;
+
+            //
+            // Final Validation
+            //
+
+            if (!stringifySuccess)
+            {
+                mLogger.Log(methodName, "Error !! The list argument (Clever parameter items) contains at least one invalid value.", 1);
+                throw new System.ArgumentException(string.Format("The list argument (Clever parameter items) contains at least one invalid value. For more details, see log at: {0}", mLogger.mLogFile));
+            }
+            if (kvpList.Count < 1)
+            {
+                mLogger.Log(methodName, "Error !! The list argument (Clever parameter items) contains NO items.", 1);
+                throw new System.ArgumentException(string.Format("The list argument (Clever parameter items) contains NO items."));
+            }
+            if (kvpStr.Contains("include="))
+            {
+                mLogger.Log(methodName, "Error !! The Clever 'include' item (second-level endpoint) is NOT valid when using request SubTypes.", 1);
+                throw new System.ArgumentException("The Clever 'include' item (second-level endpoint) is NOT valid when using request SubTypes."); //            TEST THIS FUNCTIONALITY !!!!!!!!!!!!!!!  trying to use include
+            }
+            // The assumption is that if we have an argument for cleverRequestSubType, then there WILL be an 'id' as part of the kvp's                             TEST THIS FUNCTIONALITY !!!!!!!!!!!!!!! of missing id
+            if (string.IsNullOrEmpty(id))
+            {
+                mLogger.Log(methodName, "Error !! The list argument (Clever parameter items) does NOT contain 'id'. The 'id' must be included when using cleverRequestSubType.", 1);
+                throw new System.ArgumentException(string.Format("The list argument (Clever parameter items) does NOT contain 'id'. The 'id' must be included when using cleverRequestSubType."));
+            }
+            mLogger.Log(methodName, string.Format("Successfully validated list of KeyValuePairs and converted to a string: {0}", kvpStr), 1);
+
+            // need to look at reqSubkey and determine what conditions where we need to append an "s"
+            if (requestSubType == cleverRequestSubType.district
+                || (requestType == cleverRequestType.teacher && requestSubType == cleverRequestSubType.school)
+                || (requestType == cleverRequestType.student && requestSubType == cleverRequestSubType.school)
+                || (requestType == cleverRequestType.section && requestSubType == cleverRequestSubType.school)
+                || (requestType == cleverRequestType.section && requestSubType == cleverRequestSubType.teacher))
+            {
+                pluralItems = "";
+            }
+
+            if (string.IsNullOrEmpty(kvpStr))
+            {
+                url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}/{2}{3}", requestType, id, requestSubType, pluralItems);
+            }
+            else
+            {
+                url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}/{2}{3}?{4}", requestType, id, requestSubType, pluralItems, kvpStr);
+            }
+            mLogger.Log(methodName, "url: " + url, 2);
+
+            // Send built URl to Clever and hopefully, we get a message containing the expected data
+            string rawData = GetRawDataFromClever(url);
+
+            if (string.IsNullOrEmpty(rawData))
+            {
+                mLogger.Log(methodName, "Unexpected Error !! The message from Clever appears to be empty or was not properly extracted from the stream.", 1);
+                throw new System.ApplicationException("The message from Clever appears to be empty or was not properly extracted from the stream.");
+            }
+            // The parser will parse the JSON msg and generate the Clever objects (Students, Teachers, ect) all contained in the parent object - wrappedData
+            Parser parser = new Parser(mLogger);
+            wrappedData = parser.ParseJsonMsg(rawData, requestSubType.ToString()+"s");
+
+            return wrappedData;
+        }
+
+        //public WrappedData DataRequest(cleverRequestType requestType, String id)  
         //{
-        //    WrappedData wrappedData = new WrappedData();
         //    string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_5";
-        //    string msg = string.Format("reqType: {0} :: reqSubType: {1} :: id: {2}", requestType, requestSubType, id);
+        //    // Example for "https://api.clever.com/v1.1/districts/4fd43cc56d11340000000005"
+
+        //    string msg = string.Format("reqType: {0} :: id: {1}", requestType, id);
         //    mLogger.Log(methodName, msg, 1);
+        //    WrappedData wrappedData = new WrappedData();
+
+        //    // do some initial argument validation
+        //    if (string.IsNullOrEmpty(id)) // todo NEED  TO  TEST
+        //    {
+        //        mLogger.Log(methodName, "Error !! The 'id' value is empty.", 1);
+        //        throw new System.ArgumentException("The id value is empty. This method expects the id to contain a value.");
+        //    }
+
+        //    string url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}", requestType, id);
+        //    mLogger.Log(methodName, "url: " + url, 2);
+
+        //    // Send built URl to Clever and hopefully, we get a message containing the expected data
+        //    string rawData = GetRawDataFromClever(url);
+
+        //    if (string.IsNullOrEmpty(rawData))
+        //    {
+        //        mLogger.Log(methodName, "Unexpected Error !! The message from Clever appears to be empty or was not properly extracted from the stream.", 1);
+        //        throw new System.ApplicationException("The message from Clever appears to be empty or was not properly extracted from the stream.");
+        //    }
+        //    // The parser will parse the JSON msg and generate the Clever objects (Students, Teachers, ect) all contained in the parent object - wrappedData
+        //    Parser parser = new Parser(mLogger);
+        //    wrappedData = parser.ParseJsonMsg(rawData);
 
         //    return wrappedData;
         //}

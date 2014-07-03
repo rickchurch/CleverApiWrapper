@@ -19,7 +19,7 @@ namespace CleverApiWrapper
             mWrappedData = new WrappedData();
         }
 
-        internal WrappedData ReadJsonDict(string msg)
+        internal WrappedData ParseJsonMsg_ORIG(string msg, string knownObject = "")
         {
             string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
 
@@ -29,6 +29,27 @@ namespace CleverApiWrapper
             {
                 if (kvp.Key == "data")
                 {
+
+                    if (kvp.Value.GetType() == typeof(ArrayList))
+                    {
+                        if (string.IsNullOrEmpty(knownObject))
+                        {
+                            mLogger.Log(methodName, string.Format("Unexpected error!!  I don't know what the Clever object type is."), 1, true);
+                            return mWrappedData;
+                        }
+                        else
+                        {
+                            ProcessArrayObject(kvp.Value, knownObject);
+                        }
+                        return mWrappedData;
+                    }
+
+                    //
+                    //  Need to allow for an array list for kvp.value
+                    //
+
+
+
                     mLogger.Log(methodName, string.Format("Upper most level key: {0}", kvp.Key), 3);
                     foreach (KeyValuePair<string, dynamic> kvp2 in kvp.Value)
                     {
@@ -41,6 +62,14 @@ namespace CleverApiWrapper
                                 mLogger.Log(methodName, string.Format("Looking for key=data.  This key: {0}", kvp3.Key), 3);
                                 if (kvp3.Key == "data")
                                 {
+                                    if (kvp3.Value.GetType() == typeof(ArrayList))
+                                    {
+                                        ProcessArrayObject(kvp3.Value, targetObjectType);
+                                        return mWrappedData;
+                                    }
+
+
+
                                     ArrayList targetObjectList = new ArrayList();
                                     targetObjectList = kvp3.Value;
                                     foreach (var item in targetObjectList)
@@ -84,6 +113,7 @@ namespace CleverApiWrapper
                                                     }
                                                 }
                                             }
+
                                         }
                                     }
                                 }
@@ -101,6 +131,120 @@ namespace CleverApiWrapper
             mLogger.Log(methodName, string.Format("Found {0} sections.", mWrappedData.Sections.Count), 2);
             mLogger.Log(methodName, string.Format("Found {0} students.", mWrappedData.Students.Count), 2);
             return mWrappedData;
+        }
+
+
+        internal WrappedData ParseJsonMsg(string msg, string knownObject = "")
+        {
+            string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+
+            var jss = new JavaScriptSerializer();
+            var masterDict = jss.Deserialize<Dictionary<string, dynamic>>(msg);
+            foreach (KeyValuePair<string, dynamic> kvp in masterDict)
+            {
+                if (kvp.Key == "data")
+                {
+
+                    if (kvp.Value.GetType() == typeof(ArrayList))
+                    {
+                        if (string.IsNullOrEmpty(knownObject))
+                        {
+                            mLogger.Log(methodName, string.Format("Unexpected error!!  I don't know what the Clever object type is."), 1, true);
+                            return mWrappedData;
+                        }
+                        else
+                        {
+                            ProcessArrayObject(kvp.Value, knownObject);
+                        }
+                        //return mWrappedData;
+                    }
+                    else
+                    {
+                        mLogger.Log(methodName, string.Format("Upper most level key: {0}", kvp.Key), 3);
+                        foreach (KeyValuePair<string, dynamic> kvp2 in kvp.Value)
+                        {
+                            if (kvp2.Key == "schools" || kvp2.Key == "teachers" || kvp2.Key == "sections" || kvp2.Key == "students" || kvp2.Key == "events")
+                            {
+                                string targetObjectType = kvp2.Key;
+                                mLogger.Log(methodName, string.Format("Found object data for: {0}", targetObjectType), 2, true);
+                                foreach (KeyValuePair<string, dynamic> kvp3 in kvp2.Value)
+                                {
+                                    mLogger.Log(methodName, string.Format("Looking for key=data.  This key: {0}", kvp3.Key), 3);
+                                    if (kvp3.Key == "data")
+                                    {
+                                        if (kvp3.Value.GetType() == typeof(ArrayList))
+                                        {
+                                            ProcessArrayObject(kvp3.Value, targetObjectType);
+                                            //return mWrappedData;
+                                        }
+                                        else
+                                        {
+                                            mLogger.Log(methodName, string.Format("Unexpected error!!  I don't know what the Clever object type is."), 1, true);
+                                            return mWrappedData;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            mLogger.Log(methodName, "", 2);
+            mLogger.Log(methodName, string.Format("Completed processing to parse raw Clever message."), 2);
+            mLogger.Log(methodName, string.Format("Found {0} districts.", mWrappedData.Districts.Count), 2);
+            mLogger.Log(methodName, string.Format("Found {0} schools.", mWrappedData.Schools.Count), 2);
+            mLogger.Log(methodName, string.Format("Found {0} teachers.", mWrappedData.Teachers.Count), 2);
+            mLogger.Log(methodName, string.Format("Found {0} sections.", mWrappedData.Sections.Count), 2);
+            mLogger.Log(methodName, string.Format("Found {0} students.", mWrappedData.Students.Count), 2);
+            return mWrappedData;
+        }
+
+        void ProcessArrayObject(ArrayList targetObjectList, string targetObjectType)
+        {
+            bool isDict = false;
+            foreach (var item in targetObjectList)
+            {
+                if (item != null)
+                {
+                    Type valueType = item.GetType();
+                    if (valueType.IsGenericType)
+                    {
+                        Type baseType = valueType.GetGenericTypeDefinition();
+                        if (baseType == typeof(Dictionary<,>))
+                        {
+                            isDict = true;
+                        }
+                    }
+                    if (isDict)
+                    {
+                        Dictionary<string, dynamic> targetDataDict = (Dictionary<string, dynamic>)item;
+                        foreach (KeyValuePair<string, dynamic> targetData in targetDataDict)
+                        {
+                            if (targetData.Key == "data")
+                            {
+                                if (targetObjectType == "schools")
+                                {
+                                    bool instantiateSuccess = InstantiateSchool(targetObjectType, targetData.Value);
+                                }
+                                else if (targetObjectType == "teachers")
+                                {
+                                    bool instantiateSuccess = InstantiateTeacher(targetObjectType, targetData.Value);
+                                }
+                                else if (targetObjectType == "sections")
+                                {
+                                    bool instantiateSuccess = InstantiateStudent(targetObjectType, targetData.Value);
+                                }
+                                else if (targetObjectType == "students")
+                                {
+                                    bool instantiateSuccess = InstantiateStudent(targetObjectType, targetData.Value);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         bool InstantiateSchool(string classType, dynamic dataDict)
