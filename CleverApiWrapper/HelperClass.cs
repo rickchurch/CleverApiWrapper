@@ -127,7 +127,9 @@ namespace CleverApiWrapper
                 }
                 else
                 {
-                    kvpStr = string.Format("{0};{1}={2}", kvpStr, kvpKey, pair.Value);
+                    //kvpStr = string.Format("{0};{1}={2}", kvpStr, kvpKey, pair.Value);
+                    //kvpStr = string.Format("{0},{1}={2}", kvpStr, kvpKey, pair.Value);
+                    kvpStr = string.Format("{0} {1}={2}", kvpStr, kvpKey, pair.Value);
                 }
             }
             Tuple<string, string, bool> kvpTupleFinal = new Tuple<string, string, bool>(kvpStr, kvpId, success);

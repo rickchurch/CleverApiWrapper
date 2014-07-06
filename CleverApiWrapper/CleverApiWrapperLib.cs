@@ -53,6 +53,7 @@ namespace CleverApiWrapper
             string msg = string.Format("reqType: {0}", requestType);
             mLogger.Log(methodName, msg, 1);
 
+            string cleverObjType = requestType.ToString() + "s";
             WrappedData wrappedData = new WrappedData();
 
             string url = string.Format(@"https://api.clever.com/v1.1/{0}s", requestType);
@@ -60,6 +61,7 @@ namespace CleverApiWrapper
 
             // Send built URl to Clever and hopefully, we get a message containing the expected data
             string rawData = GetRawDataFromClever(url);
+            //string rawData = GetTestMsg();  //                   REMOVE THIS LINE AFTER TESTING - THIS BYPASSES NETWORK CONN.!!!!!!!!!!!!!!
 
             if (string.IsNullOrEmpty(rawData))
             {
@@ -68,7 +70,7 @@ namespace CleverApiWrapper
             }
             // The parser will parse the JSON msg and generate the Clever objects (Students, Teachers, ect) all contained in the parent object - wrappedData
             Parser parser = new Parser(mLogger);
-            wrappedData = parser.ParseJsonMsg(rawData);
+            wrappedData = parser.ParseJsonMsg(rawData, cleverObjType);
 
             return wrappedData;
         }
@@ -133,6 +135,7 @@ namespace CleverApiWrapper
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name + "_2";
+            string cleverObjType = string.Empty;
             string url = string.Empty;
             string msg = string.Format("reqType: {0} :: List<string> count: {1}", requestType, kvpList.Count);
             mLogger.Log(methodName, msg, 1);
@@ -167,6 +170,11 @@ namespace CleverApiWrapper
                     throw new System.ArgumentException("The 'id' value is empty and user attempted to use Clever include item (second-level endpoint).  There must be an 'id' when using 'include'.");
                 }
             }
+            if (!kvpStr.Contains("include="))
+            {
+                // We know the return object should be reqType, so pass that along in case it is needed
+                cleverObjType = requestType.ToString() + "s";
+            }
 
             mLogger.Log(methodName, string.Format("Successfully validated list of KeyValuePairs and converted to a string: {0}", kvpStr), 1);
 
@@ -189,6 +197,7 @@ namespace CleverApiWrapper
 
             // Send built URl to Clever and hopefully, we get a message containing the expected data
             string rawData = GetRawDataFromClever(url);
+            //string rawData = GetTestMsg();  //                   REMOVE THIS LINE AFTER TESTING - THIS BYPASSES NETWORK CONN.!!!!!!!!!!!!!!
 
             if (string.IsNullOrEmpty(rawData))
             {
@@ -197,7 +206,7 @@ namespace CleverApiWrapper
             }
             // The parser will parse the JSON msg and generate the Clever objects (Students, Teachers, ect) all contained in the parent object - wrappedData
             Parser parser = new Parser(mLogger);
-            wrappedData = parser.ParseJsonMsg(rawData);
+            wrappedData = parser.ParseJsonMsg(rawData, cleverObjType);
 
             return wrappedData;
         }
@@ -273,11 +282,13 @@ namespace CleverApiWrapper
 
             // Send built URl to Clever and hopefully, we get a message containing the expected data
             string rawData = GetRawDataFromClever(url);
+            //string rawData = GetTestMsg();  //                   REMOVE THIS LINE AFTER TESTING - THIS BYPASSES NETWORK CONN.!!!!!!!!!!!!!!
 
             if (string.IsNullOrEmpty(rawData))
             {
-                mLogger.Log(methodName, "Unexpected Error !! The message from Clever appears to be empty or was not properly extracted from the stream.", 1);
-                throw new System.ApplicationException("The message from Clever appears to be empty or was not properly extracted from the stream.");
+                string errMsg = "The message from Clever appears to be empty or was not properly extracted from the stream. It may also indicate a network connection error.";
+                mLogger.Log(methodName, "Unexpected Error !! " + errMsg, 1);
+                throw new System.ApplicationException(errMsg);
             }
             // The parser will parse the JSON msg and generate the Clever objects (Students, Teachers, ect) all contained in the parent object - wrappedData
             Parser parser = new Parser(mLogger);
@@ -372,13 +383,13 @@ namespace CleverApiWrapper
         //    return CleverRawMsg;
         //}
 
-        string GetRawDataFromClever(string uri)
+        string GetRawDataFromClever(string url)
         {
             string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             string CleverRawMsg = string.Empty;
             try
             {
-                var request = WebRequest.Create(uri);
+                var request = WebRequest.Create(url);
                 request.Headers["Authorization"] = mCleverToken;  // test the response with this line commented out
                 using (var response = request.GetResponse())
                 {
@@ -404,7 +415,7 @@ namespace CleverApiWrapper
                 if (ex.Status == WebExceptionStatus.ProtocolError && ex.Response != null)
                 {
                     mLogger.Log(methodName, string.Format("Clever responded with an error !! Msg from Clever: {0}", ex.Message), 1, true);
-                    throw new System.Net.WebException("Clever responded with an error !!", ex);
+                    throw new System.Net.WebException(string.Format("Clever responded with an error !!  Url: {0}", url), ex);
                     //var resp = (HttpWebResponse)ex.Response;
                     //if (resp.StatusCode == HttpStatusCode.NotFound)
                 }
@@ -413,20 +424,40 @@ namespace CleverApiWrapper
                     mLogger.Log(methodName, string.Format("Unexpected error !! ErrMsg: {0}", ex.Message), 1, true);
                 }
             }
+            //SaveData(CleverRawMsg, url); // Remove after testing complete %%%%%%%%%%%%%%%%%
             return CleverRawMsg;
         }
 
 
 
-
-        //void SaveData(string msg, string title)
+        // This is for testing only - Remove for production use
+        //void SaveData(string msg, string url)
         //{
-        //    string fileName = string.Format("C:\\ProgramData\\Rick\\{0}_logFile.txt", title);
+        //    string timestamp = DateTime.Now.ToString(@"yyMMdd_HHmmss");
+        //    string fileName = string.Format("C:\\ProgramData\\Rick\\CleverRawMsg_{0}.txt", timestamp);
         //    using (System.IO.StreamWriter file = new System.IO.StreamWriter(fileName))
         //    {
+        //        file.WriteLine("url: {0}", url);
+        //        file.WriteLine("");
         //        file.WriteLine(msg);
+                
         //        Console.WriteLine("\n Done");
         //    }
         //}
+
+        // this is for testing purposes only - remove for production
+        //string GetTestMsg()
+        //{
+        //    string line;
+        //    using (StreamReader reader = new StreamReader("C:\\ProgramData\\Rick\\CleverRawMsg_140704_155151_2.txt"))
+        //    {
+        //        while ((line = reader.ReadLine()) != null)
+        //        {
+        //            break;
+        //        }
+        //    }
+        //    return line;
+        //}
+
     }
 }
