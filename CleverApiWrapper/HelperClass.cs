@@ -64,8 +64,9 @@ namespace CleverApiWrapper
         /// <summary>
         /// Takes passed in argument which is a list of keyValuePairs and first validates the values against what is currently acceptable and then secondly 
         ///   convert that list of kvp's into a string that can be integrated into our URL we are building.  Additionally, if any of the keyValuePairs have key 
-        ///   equal to 'id' we set that separately and returns it as part of the return Tuple.  The Tuple will have 2 strings with the first being the primary 
-        ///   kvp string and the second Tuple component containing the id value if it exists - empty string being the default value.
+        ///   equal to 'id' we set that separately and returns it as part of the return Tuple.  The Tuple will have 2 strings and a bool with the first sring 
+        ///   being the primary kvp string and the second Tuple component containing the id value if it exists - empty string being the default value.
+        ///   The bool is simply a flag indicating that there was a problem validating at least one item.
         /// </summary>
         /// <param name="logger"></param>
         /// <param name="kvpList"></param>
@@ -127,9 +128,7 @@ namespace CleverApiWrapper
                 }
                 else
                 {
-                    //kvpStr = string.Format("{0};{1}={2}", kvpStr, kvpKey, pair.Value);
-                    //kvpStr = string.Format("{0},{1}={2}", kvpStr, kvpKey, pair.Value);
-                    kvpStr = string.Format("{0} {1}={2}", kvpStr, kvpKey, pair.Value);
+                    kvpStr = string.Format("{0}&{1}={2}", kvpStr, kvpKey, pair.Value);
                 }
             }
             Tuple<string, string, bool> kvpTupleFinal = new Tuple<string, string, bool>(kvpStr, kvpId, success);

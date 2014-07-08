@@ -5,10 +5,11 @@ using System.Text;
 
 namespace CleverApiWrapper
 {
+    /// <summary>
+    /// This class respresents the Clever.com object named Student.
+    /// </summary>
     public class Student
     {
-        //  NEED TO CONFIRM THESE PROPERTIES -  CONFIRMED
-
         public string district { get; set; }
         public string dob { get; set; }
         public string ell_status { get; set; }

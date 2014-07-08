@@ -9,15 +9,16 @@ using System.Configuration;
 namespace CleverApiWrapper
 {
     /// <summary>
-    /// This logger class will perform logging using 3 different levels which can be set (LogLevel:) by user in the .ini file.  If there is no log path found in 
-    ///   the .ini file (LogPath:), it is assumed the user does not wantany logging.  This class will also perform log file cleanup.  Based on the max time to 
-    ///   keep log files setting (MaxDaysLogFile:) in the .ini file, this class will upon instantiation, delete any log files older than the setting.
-    ///   Instead of the std list of log levels (debug, info, warning, error and critical), here we are implemented a smaller range of values (debug, info, and critical)
+    /// This logger class will perform logging using 3 different levels which can be set (LogLevel:) by user in the WebConfigurationManager.AppSettings or  
+    ///   ConfigurationManager.AppSettings.  If there is no log path found in AppSettings, it is assumed the user does not want any logging.  This class will  
+    ///   also perform log file cleanup.  Based on the max time to keep log files setting (MaxDaysLogFile:) in AppSettings, this class will upon instantiation, 
+    ///   delete any log files older than the setting. Instead of the std list of log levels (debug, info, warning, error and critical), here we implemented a 
+    ///   smaller range of values (1 - 3). Log level 1 is (highest priority) for errors and critical logging, 3 log level is routine (lowest) info.
     /// </summary>
     internal class Logger
     {
         int mMaxDays = 7;
-        int mLogLevel = 1;  // Log level 1 is highest priority log, 3 log level is routine info
+        int mLogLevel = 1;  // Log level 1 is (highest priority) for errors and critical logging, 3 log level is routine (lowest) info.
         string mLogPath = string.Empty;
         internal string mLogFile = string.Empty;
         DateTime mLastCleanLogTime;
@@ -31,7 +32,6 @@ namespace CleverApiWrapper
         void Init()
         {
             mHelper = new HelperClass();
-            //GetLogSettings();
 
             mLogPath = GetAppSetting("LogPath", "C:\\ProgramData\\Rick\\CleverLogs");  // NEED TO SET DEFAULT TO EMPTY STRING BEFORE PUTTING THIS IN PRODUCTION
             mLogLevel = mHelper.ConvertStringToInt(GetAppSetting("LogLevel", "3"));
@@ -49,63 +49,6 @@ namespace CleverApiWrapper
             CleanLogFiles();
         }
 
-
-        /// <summary>
-        /// read ini file and override log location, max time to keep logs and log level if any of these are set in ini file
-        /// </summary>
-        //void GetLogSettings()
-        //{
-        //    try
-        //    {
-        //        string iniFilePath = @"C:\ProgramData\IDLA\CleverApiWrapper.ini";
-        //        if (!File.Exists(iniFilePath))
-        //        {
-        //            return;
-        //        }
-        //        else
-        //        {
-        //            string line;
-        //            using (StreamReader reader = new StreamReader(iniFilePath))
-        //            {
-        //                while ((line = reader.ReadLine()) != null)
-        //                {
-        //                    if (line.StartsWith("#")) continue;
-        //                    else if (line.StartsWith("LogPath:"))
-        //                    {
-        //                        mLogPath = line.Substring(8, line.Length - 8);
-        //                    }
-        //                    else if (line.StartsWith("LogLevel:"))
-        //                    {
-        //                        string value = line.Substring(9, line.Length - 9);
-        //                        int testValue;
-        //                        int.TryParse(value, out testValue);
-        //                        if (testValue <= 3 && testValue >= 1)
-        //                        {
-        //                            mLogLevel = testValue;
-        //                        }
-        //                    }
-        //                    else if (line.StartsWith("MaxDaysLogFile:"))
-        //                    {
-        //                        string value = line.Substring(15, line.Length - 15);
-        //                        int testValue;
-        //                        int.TryParse(value, out testValue);
-        //                        if (testValue <= (365 * 2) && testValue >= 0)
-        //                        {
-        //                            mMaxDays = testValue;
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        mLogPath = string.Empty;
-        //        return;
-        //    }
-        //}
-
-        // Get web.config or app.config appsetting value 
         string GetAppSetting(string settingName, string defaultValue = "")
         {
             // variable to store the return value
@@ -127,7 +70,7 @@ namespace CleverApiWrapper
         }
 
         /// <summary>
-        /// When we instantiate this class or every 
+        /// When we instantiate this class or every nMaxDays, clean out the older log files
         /// </summary>
         /// <param name="elapsedTime"></param>
         void CleanLogFiles(double elapsedTime=0)
@@ -147,7 +90,8 @@ namespace CleverApiWrapper
         }
 
         /// <summary>
-        /// Writes a line in mLogFile.  Line begins with current timestamp, then calling method, finally the passed in msg to log
+        /// Writes a line in mLogFile.  Line begins with current timestamp, then calling method, finally the passed in msg to log.
+        /// If we don't have a log path specified (it is empty string) we don't log anything.
         /// </summary>
         /// <param name="methodName"></param>
         /// <param name="msg"></param>
@@ -160,7 +104,6 @@ namespace CleverApiWrapper
 
                 TimeSpan difference = DateTime.Now - mLastCleanLogTime;
                 // in case this instantiation exits for extended periods of time, we will check each time we log to see if we should do a clean
-                //if(difference.TotalSeconds > 45)
                 if(difference.TotalHours > 24)
                 {
                     CleanLogFiles(difference.TotalHours);

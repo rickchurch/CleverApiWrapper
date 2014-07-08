@@ -43,7 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Admin.cs" />
     <Compile Include="CleverApiWrapperLib.cs" />
+    <Compile Include="Contact.cs" />
     <Compile Include="Credentials.cs" />
     <Compile Include="District.cs" />
     <Compile Include="Event.cs" />
