@@ -10,6 +10,7 @@ namespace CleverApiWrapper
     /// </summary>
     public class Student
     {
+        public string event_type { get; set; }
         public string district { get; set; }
         public string dob { get; set; }
         public string ell_status { get; set; }

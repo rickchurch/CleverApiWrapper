@@ -43,21 +43,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Admin.cs" />
+    <Compile Include="CleverObjects\Admin.cs" />
     <Compile Include="CleverApiWrapperLib.cs" />
-    <Compile Include="Contact.cs" />
-    <Compile Include="Credentials.cs" />
-    <Compile Include="District.cs" />
-    <Compile Include="Event.cs" />
-    <Compile Include="Google_apps.cs" />
+    <Compile Include="CleverObjects\Contact.cs" />
+    <Compile Include="CleverObjects\Credentials.cs" />
+    <Compile Include="CleverObjects\District.cs" />
+    <Compile Include="CleverObjects\Event.cs" />
+    <Compile Include="CleverObjects\Google_apps.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Parser.cs" />
-    <Compile Include="PersonName.cs" />
+    <Compile Include="CleverObjects\PersonName.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="School.cs" />
-    <Compile Include="Section.cs" />
-    <Compile Include="Student.cs" />
-    <Compile Include="Teacher.cs" />
+    <Compile Include="CleverObjects\School.cs" />
+    <Compile Include="CleverObjects\Section.cs" />
+    <Compile Include="CleverObjects\Student.cs" />
+    <Compile Include="CleverObjects\Teacher.cs" />
     <Compile Include="HelperClass.cs" />
     <Compile Include="WrappedData.cs" />
   </ItemGroup>

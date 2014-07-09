@@ -10,57 +10,6 @@ namespace CleverApiWrapper
         List<string> mValidIncludeItems = new List<string>() { "districts", "teachers", "schools", "students", "events", "sections" };
         List<string> mValidKvpKeyItems = new List<string>() { "limit", "page", "where", "sort", "count", "distinct", "grade", "created_since", "include", "id", "key" };
 
-        //internal bool ValidateQualifierItem(Logger logger, string itemToValidate, string valType)
-        //{
-        //    string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-        //    bool success = false;
-
-        //    if (valType == "str")
-        //    {
-        //        foreach (string validIncludeItem in mValidIncludeItems)
-        //        {
-        //            if (validIncludeItem == itemToValidate) return true;
-        //        }
-        //    }
-        //    else if (valType == "kvp")
-        //    {
-        //        foreach (string validIncludeItem in mValidIncludeItems)
-        //        {
-        //            if (validIncludeItem == itemToValidate) return true;
-        //        }
-        //    }
-
-        //    string msg = string.Format("Error !! Qualifier item: \"{0}\" is INVALID.", itemToValidate);
-        //    logger.Log(methodName, msg, 1, true);
-
-        //    return success;
-        //}
-
-        //internal string GetIncludeStringAndValidate(Logger logger, List<string> stringList)
-        //{
-        //    string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-        //    string includes = string.Empty;
-        //    foreach (string inclItem in stringList)
-        //    {
-        //        if (!ValidateQualifierItem(logger, inclItem, "str"))
-        //        {
-        //            // todo - throw an error or just discard invalid item ???
-        //            //continue;
-        //            return "";
-        //        }
-
-        //        if (string.IsNullOrEmpty(includes))
-        //        {
-        //            includes = inclItem;
-        //        }
-        //        else
-        //        {
-        //            includes = string.Format("{0},{1}", includes, inclItem);
-        //        }
-        //    }
-        //    return includes;
-        //}
-
         /// <summary>
         /// Takes passed in argument which is a list of keyValuePairs and first validates the values against what is currently acceptable and then secondly 
         ///   convert that list of kvp's into a string that can be integrated into our URL we are building.  Additionally, if any of the keyValuePairs have key 
@@ -108,7 +57,7 @@ namespace CleverApiWrapper
                         }
                     }
                 }
-                // check for 'id'  and if so, set that value for the 2nd item in Tuple
+                // check for 'id'  and if found, set that value for the 2nd item in Tuple
                 if (kvpKey == "id")
                 {
                     if (!string.IsNullOrEmpty(kvpId))

@@ -203,9 +203,9 @@ namespace CleverApiWrapper
             if (kvpStr.Contains("include="))
             {
                 mLogger.Log(methodName, "Error !! The Clever 'include' item (second-level endpoint) is NOT valid when using request SubTypes.", 1);
-                throw new System.ArgumentException("The Clever 'include' item (second-level endpoint) is NOT valid when using request SubTypes."); //            TEST THIS FUNCTIONALITY !!!!!!!!!!!!!!!  trying to use include
+                throw new System.ArgumentException("The Clever 'include' item (second-level endpoint) is NOT valid when using request SubTypes.");
             }
-            // The assumption is that if we have an argument for cleverRequestSubType, then there WILL be an 'id' as part of the kvp's                             TEST THIS FUNCTIONALITY !!!!!!!!!!!!!!! of missing id
+            // The assumption is that if we have an argument for cleverRequestSubType, then there WILL be an 'id' as part of the kvp's
             if (string.IsNullOrEmpty(id))
             {
                 mLogger.Log(methodName, "Error !! The list argument (Clever parameter items) does NOT contain 'id'. The 'id' must be included when using cleverRequestSubType.", 1);
@@ -264,7 +264,7 @@ namespace CleverApiWrapper
             try
             {
                 var request = WebRequest.Create(url);
-                request.Headers["Authorization"] = mCleverToken;  // test the response with this line commented out
+                request.Headers["Authorization"] = mCleverToken;
                 using (var response = request.GetResponse())
                 {
                     using (var responseStream = response.GetResponseStream())

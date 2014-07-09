@@ -139,6 +139,7 @@ namespace CleverApiWrapper
                         {
                             if (targetData.Key == "data" || targetObjectType == "contacts")
                             {
+                                Tuple<string, string> emptyTuple = new Tuple<string, string>("", "");
                                 if (targetObjectType == "districts")
                                 {
                                     bool instantiateSuccess = InstantiateDistrict(targetData.Value);
@@ -157,7 +158,11 @@ namespace CleverApiWrapper
                                 }
                                 else if (targetObjectType == "students")
                                 {
-                                    bool instantiateSuccess = InstantiateStudent(targetData.Value);
+                                    bool instantiateSuccess = InstantiateStudent(targetData.Value, emptyTuple);
+                                }
+                                else if (targetObjectType == "Events")
+                                {
+                                    bool instantiateSuccess = InstantiateEvent(targetData.Value);
                                 }
                             }
                         }
@@ -183,7 +188,6 @@ namespace CleverApiWrapper
                     Type valueType = dpParent.Value.GetType();
                     if (valueType.IsGenericType)
                     {
-                        // condition not expected
                         mLogger.Log(methodName, string.Format("ALERT !  Condition not expected. valueType of dpParent: {0}", valueType.FullName), 1);
                     }
                     else if (valueType.Name == "String")
@@ -393,7 +397,7 @@ namespace CleverApiWrapper
             return success;
         }
 
-        bool InstantiateStudent(dynamic dataDict)
+        bool InstantiateStudent(dynamic dataDict, Tuple<string, string> when_id)
         {
             string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             mLogger.Log(methodName, "", 3);
@@ -460,6 +464,16 @@ namespace CleverApiWrapper
                     }
                 }
             }
+            if (when_id.Item1 == "current_attributes")
+            {
+                student.event_type = when_id.Item1;
+            }
+            else if (when_id.Item1 == "previous_attributes")
+            {
+                student.event_type = when_id.Item1;
+                student.id = when_id.Item2;
+            }
+
             student.location = stuLoc;
             student.credentials = credentials;
             student.name = pName;
@@ -535,6 +549,47 @@ namespace CleverApiWrapper
             }
 
             mWrappedData.Admins.Add(admin);
+
+            return success;
+        }
+
+        bool InstantiateEvent(dynamic dataDict)
+        {
+            string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            mLogger.Log(methodName, "", 3);
+
+            bool success = true;
+
+            string eventType = string.Empty;
+            string objectId = string.Empty;
+
+            // Get each dp (datapoint) found in dataDict
+            foreach (KeyValuePair<string, dynamic> dpParent in dataDict)
+            {
+                if (dpParent.Key == "type" && dpParent.Value.GetType() == typeof(String))
+                {
+                    eventType = dpParent.Value;
+                    mLogger.Log(methodName, string.Format("Found event type: {0}", eventType), 3);
+                    continue;
+                }
+                if (dpParent.Key == "data")
+                {
+                    foreach (KeyValuePair<string, dynamic> dpChild in dpParent.Value)
+                    {
+                        if (dpChild.Key == "object")
+                        {
+                            objectId = dpChild.Value["id"];
+                            Tuple<string, string> when_id = new Tuple<string, string>("current_attributes", "");
+                            InstantiateStudent(dpChild.Value, when_id);
+                        }
+                        else if (dpChild.Key == "previous_attributes")
+                        {
+                            Tuple<string, string> when_id = new Tuple<string, string>("previous_attributes", objectId);
+                            InstantiateStudent(dpChild.Value, when_id);
+                        }
+                    }
+                }
+            }
 
             return success;
         }
