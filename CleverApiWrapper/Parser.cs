@@ -52,7 +52,8 @@ namespace CleverApiWrapper
                         mLogger.Log(methodName, string.Format("Upper most level key: {0}", kvp.Key), 3);
                         foreach (KeyValuePair<string, dynamic> kvp2 in kvp.Value)
                         {
-                            if (kvp2.Key == "districts" || kvp2.Key == "schools" || kvp2.Key == "teachers" || kvp2.Key == "sections" || kvp2.Key == "students" || kvp2.Key == "events")
+                            //if (kvp2.Key == "districts" || kvp2.Key == "schools" || kvp2.Key == "teachers" || kvp2.Key == "sections" || kvp2.Key == "students" || kvp2.Key == "events")
+                            if (kvp2.Key == "districts" || kvp2.Key == "schools" || kvp2.Key == "teachers" || kvp2.Key == "sections" || kvp2.Key == "students")
                             {
                                 compoundData = true;
                                 string targetObjectType = kvp2.Key;
@@ -142,27 +143,27 @@ namespace CleverApiWrapper
                                 Tuple<string, string> emptyTuple = new Tuple<string, string>("", "");
                                 if (targetObjectType == "districts")
                                 {
-                                    bool instantiateSuccess = InstantiateDistrict(targetData.Value);
+                                    bool instantiateSuccess = InstantiateDistrict(targetData.Value, emptyTuple);
                                 }
                                 else if (targetObjectType == "schools")
                                 {
-                                    bool instantiateSuccess = InstantiateSchool(targetData.Value);
+                                    bool instantiateSuccess = InstantiateSchool(targetData.Value, emptyTuple);
                                 }
                                 else if (targetObjectType == "teachers")
                                 {
-                                    bool instantiateSuccess = InstantiateTeacher(targetData.Value);
+                                    bool instantiateSuccess = InstantiateTeacher(targetData.Value, emptyTuple);
                                 }
                                 else if (targetObjectType == "sections")
                                 {
-                                    bool instantiateSuccess = InstantiateSection(targetData.Value);
+                                    bool instantiateSuccess = InstantiateSection(targetData.Value, emptyTuple);
                                 }
                                 else if (targetObjectType == "students")
                                 {
                                     bool instantiateSuccess = InstantiateStudent(targetData.Value, emptyTuple);
                                 }
-                                else if (targetObjectType == "Events")
+                                else if (targetObjectType == "events")
                                 {
-                                    bool instantiateSuccess = InstantiateEvent(targetData.Value);
+                                    GetEventData(targetData.Value);
                                 }
                             }
                         }
@@ -171,7 +172,7 @@ namespace CleverApiWrapper
             }
         }
 
-        bool InstantiateDistrict(dynamic dataDict)
+        bool InstantiateDistrict(dynamic dataDict, Tuple<string, string> when_id)
         {
             string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             mLogger.Log(methodName, "", 3);
@@ -200,12 +201,22 @@ namespace CleverApiWrapper
                     }
                 }
             }
+            //  check whether we are instantiating for event data and if so, set event_type and id
+            if (when_id.Item1 == "current_attributes")
+            {
+                district.event_type = when_id.Item1;
+            }
+            else if (when_id.Item1 == "previous_attributes")
+            {
+                district.event_type = when_id.Item1;
+                district.id = when_id.Item2;
+            }
             mWrappedData.Districts.Add(district);
 
             return success;
         }
 
-        bool InstantiateSchool(dynamic dataDict)
+        bool InstantiateSchool(dynamic dataDict, Tuple<string, string> when_id)
         {
             string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             mLogger.Log(methodName, "", 3);
@@ -258,6 +269,17 @@ namespace CleverApiWrapper
                     }
                 }
             }
+            //  check whether we are instantiating for event data and if so, set event_type and id
+            if (when_id.Item1 == "current_attributes")
+            {
+                school.event_type = when_id.Item1;
+            }
+            else if (when_id.Item1 == "previous_attributes")
+            {
+                school.event_type = when_id.Item1;
+                school.id = when_id.Item2;
+            }
+
             school.location = loc;
             school.principal = principal;
             mWrappedData.Schools.Add(school);
@@ -265,7 +287,7 @@ namespace CleverApiWrapper
             return success;
         }
 
-        bool InstantiateTeacher(dynamic dataDict)
+        bool InstantiateTeacher(dynamic dataDict, Tuple<string, string> when_id)
         {
             string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             mLogger.Log(methodName, "", 3);
@@ -325,6 +347,17 @@ namespace CleverApiWrapper
                     }
                 }
             }
+            //  check whether we are instantiating for event data and if so, set event_type and id
+            if (when_id.Item1 == "current_attributes")
+            {
+                teacher.event_type = when_id.Item1;
+            }
+            else if (when_id.Item1 == "previous_attributes")
+            {
+                teacher.event_type = when_id.Item1;
+                teacher.id = when_id.Item2;
+            }
+
             teacher.credentials = credentials;
             teacher.name = pName;
             teacher.google_apps = gApps;
@@ -333,7 +366,7 @@ namespace CleverApiWrapper
             return success;
         }
 
-        bool InstantiateSection(dynamic dataDict)
+        bool InstantiateSection(dynamic dataDict, Tuple<string, string> when_id)
         {
             string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             mLogger.Log(methodName, "", 3);
@@ -390,6 +423,17 @@ namespace CleverApiWrapper
                     }
                 }
             }
+            //  check whether we are instantiating for event data and if so, set event_type and id
+            if (when_id.Item1 == "current_attributes")
+            {
+                section.event_type = when_id.Item1;
+            }
+            else if (when_id.Item1 == "previous_attributes")
+            {
+                section.event_type = when_id.Item1;
+                section.id = when_id.Item2;
+            }
+
             section.term = term;
             section.students = studentList;
             mWrappedData.Sections.Add(section);
@@ -464,6 +508,7 @@ namespace CleverApiWrapper
                     }
                 }
             }
+            //  check whether we are instantiating for event data and if so, set event_type and id
             if (when_id.Item1 == "current_attributes")
             {
                 student.event_type = when_id.Item1;
@@ -553,19 +598,17 @@ namespace CleverApiWrapper
             return success;
         }
 
-        bool InstantiateEvent(dynamic dataDict)
+        void GetEventData(dynamic dataDict)
         {
             string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             mLogger.Log(methodName, "", 3);
 
-            bool success = true;
-
             string eventType = string.Empty;
-            string objectId = string.Empty;
-
+            
             // Get each dp (datapoint) found in dataDict
             foreach (KeyValuePair<string, dynamic> dpParent in dataDict)
             {
+                string objectId = string.Empty;
                 if (dpParent.Key == "type" && dpParent.Value.GetType() == typeof(String))
                 {
                     eventType = dpParent.Value;
@@ -576,22 +619,49 @@ namespace CleverApiWrapper
                 {
                     foreach (KeyValuePair<string, dynamic> dpChild in dpParent.Value)
                     {
+                        // First we set the tuple (current vs previous data and object id) for the object that event data represents
+                        Tuple<string, string> when_id = new Tuple<string, string>("","");
                         if (dpChild.Key == "object")
                         {
+                            // we are looking at current data and includes all attributes/properties for that class
                             objectId = dpChild.Value["id"];
-                            Tuple<string, string> when_id = new Tuple<string, string>("current_attributes", "");
-                            InstantiateStudent(dpChild.Value, when_id);
+                            when_id = new Tuple<string, string>("current_attributes", "");
                         }
                         else if (dpChild.Key == "previous_attributes")
                         {
-                            Tuple<string, string> when_id = new Tuple<string, string>("previous_attributes", objectId);
+                            // we are looking at the data that was changed - previous attribute/property values only
+                            when_id = new Tuple<string, string>("previous_attributes", objectId);
+                        }
+                        // Now instantiate the object that event data represents
+                        if (eventType == "districs.updated")
+                        {
+                            InstantiateDistrict(dpChild.Value, when_id);
+                        }
+                        else if (eventType == "schools.updated")
+                        {
+                            InstantiateSchool(dpChild.Value, when_id);
+                        }
+                        else if (eventType == "teachers.updated")
+                        {
+                            InstantiateTeacher(dpChild.Value, when_id);
+                        }
+                        else if (eventType == "sections.updated")
+                        {
+                            InstantiateSection(dpChild.Value, when_id);
+                        }
+                        else if (eventType == "students.updated")
+                        {
                             InstantiateStudent(dpChild.Value, when_id);
+                        }
+                        else
+                        {
+                            mLogger.Log(methodName, string.Format("ALERT !  Unexpected condition. eventType: {0}", eventType), 1);
                         }
                     }
                 }
             }
 
-            return success;
+            return;
         }
 
         /// <summary>

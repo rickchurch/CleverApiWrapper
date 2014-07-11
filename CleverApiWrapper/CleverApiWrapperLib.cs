@@ -27,7 +27,7 @@ namespace CleverApiWrapper
             teacher,
             section,
             student,
-            //Event,
+            Event,
         };
 
         public enum cleverRequestSubType
@@ -59,10 +59,10 @@ namespace CleverApiWrapper
             string msg = string.Format("reqType: {0}", requestType);
             mLogger.Log(methodName, msg, 1);
 
-            string cleverObjType = requestType.ToString() + "s";
+            string cleverObjType = requestType.ToString().ToLower() + "s";  // toLower() used to handle Events
             WrappedData wrappedData = new WrappedData();
 
-            string url = string.Format(@"https://api.clever.com/v1.1/{0}s", requestType);
+            string url = string.Format(@"https://api.clever.com/v1.1/{0}s", requestType.ToString().ToLower());  // toLower() used to handle Events
             mLogger.Log(methodName, "url: " + url, 2);
 
             // Send built URl to Clever and hopefully, we get a message containing the expected data
@@ -127,24 +127,24 @@ namespace CleverApiWrapper
             if (!kvpStr.Contains("include="))
             {
                 // We know the return object should be reqType, so pass that along in case it is needed
-                cleverObjType = requestType.ToString() + "s";
+                cleverObjType = requestType.ToString().ToLower() + "s";
             }
 
             mLogger.Log(methodName, string.Format("Successfully validated list of KeyValuePairs and converted to a string: {0}", kvpStr), 1);
 
             if (string.IsNullOrEmpty(id))
             {
-                url = string.Format(@"https://api.clever.com/v1.1/{0}s?{1}", requestType, kvpStr);
+                url = string.Format(@"https://api.clever.com/v1.1/{0}s?{1}", requestType.ToString().ToLower(), kvpStr);
             }
             else
             {
                 if (string.IsNullOrEmpty(kvpStr))
                 {
-                    url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}", requestType, id);
+                    url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}", requestType.ToString().ToLower(), id);
                 }
                 else
                 {
-                    url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}?{2}", requestType, id, kvpStr);
+                    url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}?{2}", requestType.ToString().ToLower(), id, kvpStr);
                 }
             }
             mLogger.Log(methodName, "url: " + url, 2);
@@ -173,6 +173,7 @@ namespace CleverApiWrapper
             //// Example for "https://api.clever.com/v1.1/schools/530e595026403103360ff9fd/students"           ////
             ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
+            //string requestSubTypeStr = requestSubType.ToString().ToLower();
             string msg = string.Format("reqType: {0} :: reqSubType: {1}  :: List<kvp> count: {2}", requestType, requestSubType, kvpList.Count);
             mLogger.Log(methodName, msg, 1);
 
@@ -224,15 +225,15 @@ namespace CleverApiWrapper
             }
 
             // need to identify what type of object we will look for in parser
-            string targetObjectType = requestSubType.ToString() + "s";
+            string targetObjectType = requestSubType.ToString().ToLower() + "s";
 
             if (string.IsNullOrEmpty(kvpStr))
             {
-                url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}/{2}{3}", requestType, id, requestSubType, pluralItems);
+                url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}/{2}{3}", requestType, id, requestSubType.ToString().ToLower(), pluralItems);
             }
             else
             {
-                url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}/{2}{3}?{4}", requestType, id, requestSubType, pluralItems, kvpStr);
+                url = string.Format(@"https://api.clever.com/v1.1/{0}s/{1}/{2}{3}?{4}", requestType, id, requestSubType.ToString().ToLower(), pluralItems, kvpStr);
             }
             mLogger.Log(methodName, "url: " + url, 2);
 
