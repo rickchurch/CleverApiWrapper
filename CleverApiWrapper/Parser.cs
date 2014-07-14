@@ -141,7 +141,7 @@ namespace CleverApiWrapper
                             if (targetData.Key == "data" || targetObjectType == "contacts")
                             {
                                 Tuple<string, string> emptyTuple = new Tuple<string, string>("", "");
-                                if (targetObjectType == "districts")
+                                if (targetObjectType == "districts" || targetObjectType == "status")
                                 {
                                     bool instantiateSuccess = InstantiateDistrict(targetData.Value, emptyTuple);
                                 }

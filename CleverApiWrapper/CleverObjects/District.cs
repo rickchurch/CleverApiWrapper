@@ -11,6 +11,8 @@ namespace CleverApiWrapper
     public class District
     {
         public string event_type { get; set; }
+        public string last_sync { get; set; }
+        public string state { get; set; }
         public string name { get; set; }
         public string id { get; set; }
     }

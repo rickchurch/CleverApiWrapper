@@ -12,7 +12,8 @@ namespace CleverApiWrapper
     /// This class is the main controller for calls to this library.  It contains a DataRequest method and 2 overloaded methods as the primary library calls.  
     /// These primary methods construct a url based on passed in arguments and calls GetRawDataFromClever() to obtain a raw JSON message from Clever containing 
     ///  the SIS data. We then instantiate the Parser class to parse the JSON message and instantiate the WrappedData object that is returned to the calling code.
-    ///  The WrappedData class is a simple class that contains lists of Districts, Schools, Teachers, Sections, and Students.
+    ///  The WrappedData class is a simple class that contains lists of Districts, Schools, Teachers, Sections, and Students.  Note that the class has a public
+    ///  string mCleverToken available for specifying users token.
     /// </summary>
     public class CleverApiWrapperLib
     {
@@ -41,6 +42,7 @@ namespace CleverApiWrapper
             contact,
             admin,
             Event,
+            status,
             //properties,
         };
 
@@ -219,13 +221,15 @@ namespace CleverApiWrapper
                 || (requestType == cleverRequestType.teacher && requestSubType == cleverRequestSubType.school)
                 || (requestType == cleverRequestType.student && requestSubType == cleverRequestSubType.school)
                 || (requestType == cleverRequestType.section && requestSubType == cleverRequestSubType.school)
-                || (requestType == cleverRequestType.section && requestSubType == cleverRequestSubType.teacher))
+                || (requestType == cleverRequestType.section && requestSubType == cleverRequestSubType.teacher)
+                || (requestType == cleverRequestType.district && requestSubType == cleverRequestSubType.status))
             {
                 pluralItems = "";
             }
 
             // need to identify what type of object we will look for in parser
             string targetObjectType = requestSubType.ToString().ToLower() + "s";
+            if (requestSubType.ToString().ToLower() == "status") targetObjectType = requestSubType.ToString().ToLower();
 
             if (string.IsNullOrEmpty(kvpStr))
             {
@@ -261,11 +265,12 @@ namespace CleverApiWrapper
         string GetRawDataFromClever(string url)
         {
             string methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-            string CleverRawMsg = string.Empty;
+            string cleverRawMsg = string.Empty;
             try
             {
                 var request = WebRequest.Create(url);
                 request.Headers["Authorization"] = mCleverToken;
+                mLogger.Log(methodName, "Sending data request message to Clever.", 2);
                 using (var response = request.GetResponse())
                 {
                     using (var responseStream = response.GetResponseStream())
@@ -277,8 +282,8 @@ namespace CleverApiWrapper
                             line = objReader.ReadLine();
                             if (line != null)
                             {
-                                mLogger.Log(methodName, "Successfully retrieved raw data from Clever.", 3);
-                                CleverRawMsg = line;
+                                mLogger.Log(methodName, string.Format("Successfully received raw data from Clever: {0}", line), 3, true);
+                                cleverRawMsg = line;
                                 break;
                             }
                         }
@@ -299,7 +304,7 @@ namespace CleverApiWrapper
                     mLogger.Log(methodName, string.Format("Unexpected error !! ErrMsg: {0}", ex.Message), 1, true);
                 }
             }
-            return CleverRawMsg;
+            return cleverRawMsg;
         }
     }
 }
